@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 --import Control.Applicative ((<$>), (<*>))
-import BlockContents
+import XMLTable
 import Text.Pandoc.JSON
 import System.IO
 import System.IO.Error (IOError, try)
@@ -33,21 +33,18 @@ makeTable caption widths c = let
     in (Table [(Str caption)] align widths' hline clines)
 
 
-includeCSV id classes namevals contents = do
-  (namevals', c) <- getBlockContents namevals contents
-  case decodeContents c of
+formatCSV id classes namevals contents = do
+  case decodeContents $ BL.pack contents of
     Left s -> return $ Plain [Str s]
     Right d -> return $ makeTable (fromMaybe "Table" $ lookup "caption" namevals) ((read $ fromMaybe "[]"  $ lookup "widths" namevals)::[Double]) d
 
-includeFile id classes namevals contents = do
-  (namevals', c) <- getBlockContents namevals contents
-  return $ (CodeBlock (id, classes, namevals') (BL.unpack c))
-
-doInclude :: Block -> IO Block
-doInclude cb@(CodeBlock (id, classes, namevals) contents) 
-  | Prelude.elem "csv" classes = includeCSV id classes namevals contents
-  | otherwise = includeFile id classes namevals contents
-doInclude x = return x
+format :: Block -> IO Block
+format cb@(CodeBlock (id, classes, namevals) contents) 
+  | Prelude.elem "table" classes && Prelude.elem "csv" classes = formatCSV id classes namevals contents
+  | Prelude.elem "table" classes && Prelude.elem "xml" classes = formatXML id classes namevals contents
+  | Prelude.elem "list" classes && Prelude.elem "xml" classes = formatXML id classes namevals contents
+  | otherwise = return cb
+format x = return x
 
 main :: IO ()
-main = toJSONFilter doInclude
+main = toJSONFilter format

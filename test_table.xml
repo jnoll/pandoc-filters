@@ -1,0 +1,26 @@
+<backlog>
+<frontend>
+  <feature>
+    <id>feature 1</id>
+    <desc>Do the processing for feature 1</desc>
+    <release>1</release>
+  </feature>
+  <feature>
+    <id>feature 2</id>
+    <desc>Do the processing for feature 2</desc>
+    <release>2</release>
+  </feature>
+  <feature>
+    <id>feature 3</id>
+    <desc>Do the processing for feature 3</desc>
+    <release>3</release>
+  </feature>
+</frontend>
+<engine>
+  <feature>
+    <id>feature 2</id>
+    <desc>Do the processing for feature 2</desc>
+    <release>2</release>
+  </feature>
+</engine>
+</backlog>
