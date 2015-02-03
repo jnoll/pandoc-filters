@@ -2,6 +2,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 --import Control.Applicative ((<$>), (<*>))
 import BlockContents
+import Text.Pandoc.Options (def)
+import Text.Pandoc.Readers.Markdown (readMarkdown)
 import Text.Pandoc.JSON
 import Data.Maybe (fromJust, fromMaybe)
 import System.IO
@@ -22,17 +24,28 @@ includeCodeBlock :: String -> [String] -> [(String, String)] -> String -> IO Blo
 includeCodeBlock id classes namevals file = do  
   p <- findFile file
   c <- readFile p
-  return $ (CodeBlock (id, classes, filter (keep "include") namevals) c)
+  return $ CodeBlock (id, classes, filter (keep "include") namevals) c
+
+includePandoc :: String -> [String] ->  [(String, String)] -> String -> IO Block
+includePandoc id classes namevals file = do
+  p <- findFile file
+  c <- readFile p
+  let (Pandoc _ bs) = readMarkdown def c
+  return (Div (id, classes, filter (keep "include") namevals)  bs)
+
 
 include :: Block -> IO Block
 include cb@(CodeBlock (id, classes, namevals) contents) =
   case lookup "include" namevals of 
     Just file -> includeCodeBlock id classes namevals file
-    Nothing   -> return cb
+    Nothing -> return cb
 
 include div@(Div (id, classes, namevals) _) =
   case lookup "include" namevals of 
-    Just file -> includeCodeBlock id (filter (\x -> x /= "code") classes) namevals file -- XXX someday there might be an includeDiv
+    Just file -> if elem "code" classes then
+                     includeCodeBlock id (filter (\x -> x /= "code") classes) namevals file
+                 else
+                     includePandoc id classes namevals file
     Nothing   -> return div
 include x = return x
 

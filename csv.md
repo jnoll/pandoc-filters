@@ -7,17 +7,17 @@ A table from CSV:
 
 `test_table.xml` as a table, using *.table* class:
 
-~~~~~ {.xml .table include="test_table.xml" caption="XML Test Table" widths="[0.3, 0.6, 0.1]" columns='["id", "desc", "release"]' root="frontend" child="feature"}
+~~~~~ {.xml .table include="test_table.xml" caption="XML Test Table" widths="[0.3, 0.6, 0.1]" columns='["id", "desc", "release"]' root="frontend" child="footure"}
 ~~~~~
 
 `test_table.xml` as a list, using *.list* class:
 
-~~~~~ {.xml .list include="test_table.xml"  columns='["id", "desc", "release"]' root="frontend" child="feature"}
+~~~~~ {.xml .list include="test_table.xml"  columns='["id", "desc", "release"]' root="frontend" child="footure"}
 ~~~~~
 
 XML code block as a table:
 
-~~~~~ {.xml .table  caption="XML Test Table (immediate)" widths="[0.3, 0.6, 0.1]" columns='["id", "desc", "release"]' root="features" child="feature"}
+~~~~~ {.xml .table  caption="XML Test Table (immediate)" widths="[0.3, 0.6, 0.1]" columns='["id", "desc", "release"]' root="features" child="footure"}
 <features>
   <feature>
     <id>feature 1</id>
@@ -39,7 +39,7 @@ XML code block as a table:
 
 XML code block as a list:
 
-~~~~~ {.xml .list  caption="XML Test Table (immediate)" widths="[0.3, 0.6, 0.1]" columns='["id", "desc", "release"]' root="features" child="feature"}
+~~~~~ {.xml .list  columns='["id", "desc", "release"]' root="features"}
 <features>
   <feature>
     <id>feature 1</id>
@@ -77,3 +77,5 @@ This alternate include syntax based on div seems more natural.
 The plain form, without a class.
 
 <div class="code" include="Setup.hs"></div>
+
+<div include="sample.md"></div>

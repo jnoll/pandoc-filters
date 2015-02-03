@@ -1,48 +1,85 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 --import Control.Applicative ((<$>), (<*>))
+import CSVTable
 import XMLTable
+import Text.Pandoc.Options (def)
+import Text.Pandoc.Readers.Markdown (readMarkdown)
+import Text.Pandoc.JSON
 import Text.Pandoc.JSON
 import System.IO
 import System.IO.Error (IOError, try)
 import Control.Monad.Trans (liftIO)
-import Data.List (intercalate)
+import Data.List (intercalate, null)
 import Data.Csv hiding (lookup)
 import Data.Char (ord)
-import Data.Vector as V
 import Data.Maybe (fromJust, fromMaybe)
 import Text.XML.HXT.Core
 import qualified Data.ByteString.Lazy.Char8            as BL
 
-decodeContents :: BL.ByteString ->  Either String (Vector (Vector String))
-decodeContents c = decodeWith defaultDecodeOptions { decDelimiter = fromIntegral (ord '|') } NoHeader c
-
 makeCell :: String -> TableCell
-makeCell c = [(Plain [Str c])]
+makeCell c = let (Pandoc _ bs) = readMarkdown def c in
+             bs
 
-makeRow :: Vector String -> [TableCell]
-makeRow r = toList $ V.map makeCell r
+makeRow :: [String] -> [TableCell]
+makeRow cells = map makeCell cells
 
-makeTable :: String -> [Double] -> Vector (Vector String) -> Block
-makeTable caption widths c = let 
-    hline = makeRow $ V.head c
-    align = toList $ V.map (\_ -> AlignDefault) $ V.head c
---    widths = toList $ V.map (\_ -> 1.0/(fromIntegral $ V.length $ V.head c) ) $ V.head c
-    widths' = if Prelude.length widths > 0 then widths else toList $ V.map (\_ -> 1.0/(fromIntegral $ V.length $ V.head c) ) $ V.head c
-    clines = toList $ V.map makeRow $ V.tail c
-    in (Table [(Str caption)] align widths' hline clines)
+makeHeader :: String -> TableCell
+makeHeader c = [Plain [Strong [Str c]]]
+
+makeAlign :: String -> Alignment
+makeAlign "l" = AlignLeft
+makeAlign "c" = AlignCenter
+makeAlign "r" = AlignRight
+makeAlign  _  = AlignDefault
+
+makeTable :: String -> [String] -> [Double] -> [String] -> [[String]] -> Block
+makeTable caption heads widths aligns rows = 
+  (Table [(Str caption)] 
+             (if null aligns then map (\_ -> AlignDefault) heads else map makeAlign aligns)
+             (if null widths then map (\_ -> 0) heads else widths)
+             (map makeHeader heads)
+             (map makeRow rows))
+
+makeItem :: [String] -> [Block]
+makeItem cells = let i = intercalate ": " cells in
+                 makeCell i
+
+makeList :: [[String]] -> Block
+makeList rows = 
+  let rows' = map makeItem rows in
+  (OrderedList (1, DefaultStyle, DefaultDelim) rows')
+
 
 
 formatCSV id classes namevals contents = do
-  case decodeContents $ BL.pack contents of
-    Left s -> return $ Plain [Str s]
-    Right d -> return $ makeTable (fromMaybe "Table" $ lookup "caption" namevals) ((read $ fromMaybe "[]"  $ lookup "widths" namevals)::[Double]) d
+  let (heads, rows) = getCSV contents
+  makeTable (fromMaybe "Table" $ lookup "caption" namevals) 
+            heads 
+            ((read $ fromMaybe "[]"  $ lookup "widths" namevals)::[Double]) 
+            (read $ fromMaybe "[]" $ lookup "align" namevals)
+            rows
+
+formatXML :: String -> [String] -> [(String, String)] -> String -> IO Block
+formatXML id classes namevals contents = do
+  let cols = read $ fromMaybe "[]" $ lookup "columns" namevals
+  let root = fromMaybe "" $ lookup "root" namevals
+  rows <- getXML root cols contents 
+  if elem "table" classes then 
+      let heads = read $ fromMaybe "[]" $ lookup "headers" namevals
+          widths = ((read $ fromMaybe "[]"  $ lookup "widths" namevals)::[Double])
+          aligns = (read $ fromMaybe "[]" $ lookup "align" namevals)
+          caption =  fromMaybe "Table" $ lookup "caption" namevals in
+      return $ makeTable caption (if null heads  then cols else heads) widths aligns rows
+  else
+      return $ makeList rows
+
 
 format :: Block -> IO Block
 format cb@(CodeBlock (id, classes, namevals) contents) 
-  | Prelude.elem "table" classes && Prelude.elem "csv" classes = formatCSV id classes namevals contents
-  | Prelude.elem "table" classes && Prelude.elem "xml" classes = formatXML id classes namevals contents
-  | Prelude.elem "list" classes && Prelude.elem "xml" classes = formatXML id classes namevals contents
+  | elem "table" classes && elem "csv" classes = return $ formatCSV id classes namevals contents
+  | elem "table" classes && elem "xml" classes = formatXML id classes namevals contents
+  | elem "list" classes && elem "xml" classes = formatXML id classes namevals contents
   | otherwise = return cb
 format x = return x
 

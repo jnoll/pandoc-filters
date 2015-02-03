@@ -1,25 +1,25 @@
 <backlog>
 <frontend>
   <feature>
-    <id>feature 1</id>
-    <desc>Do the processing for feature 1</desc>
+    <id>*frontend 1*</id>
+    <desc>Do the *processing* for frontend 1</desc>
     <release>1</release>
   </feature>
   <feature>
-    <id>feature 2</id>
-    <desc>Do the processing for feature 2</desc>
+    <id>frontend 2</id>
+    <desc>Do the processing for *frontend* 2</desc>
     <release>2</release>
   </feature>
   <feature>
-    <id>feature 3</id>
-    <desc>Do the processing for feature 3</desc>
+    <id>frontend 3</id>
+    <desc>Do the processing _for_ frontend 3</desc>
     <release>3</release>
   </feature>
 </frontend>
 <engine>
   <feature>
-    <id>feature 2</id>
-    <desc>Do the processing for feature 2</desc>
+    <id>engine 1</id>
+    <desc>Do the processing for engine 1</desc>
     <release>2</release>
   </feature>
 </engine>
