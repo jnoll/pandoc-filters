@@ -4,10 +4,9 @@
    Get block contents, either from file specified in attributes, or block itself.
 -}
 
-module BlockContents (getBlockContents, getBlockContentsString) where
+module Text.Pandoc.Filter.BlockContents (getBlockContents, getBlockContentsString) where
 import System.IO
 import System.IO.Error (IOError, try)
-import Control.Monad.Trans (liftIO)
 import Data.Maybe (fromJust, fromMaybe)
 import qualified Data.ByteString.Lazy.Char8 as BL
 

@@ -1,21 +1,22 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
---import Control.Applicative ((<$>), (<*>))
-import CSVTable
-import XMLTable
+{-# LANGUAGE DoAndIfThenElse #-}
+module Text.Pandoc.Filter.Tables (
+       formatTableBlock
+) where
+import Text.Pandoc.Filter.CSVTable
+import Text.Pandoc.Filter.XMLTable
 import Text.Pandoc.Options (def)
 import Text.Pandoc.Readers.Markdown (readMarkdown)
-import Text.Pandoc.JSON
-import Text.Pandoc.JSON
+import Text.Pandoc
 import System.IO
-import System.IO.Error (IOError, try)
-import Control.Monad.Trans (liftIO)
-import Data.List (intercalate, null)
+import qualified  Data.List as DL
 import Data.Csv hiding (lookup)
-import Data.Char (ord)
+--import Data.Char (ord)
 import Data.Maybe (fromJust, fromMaybe)
 import Text.XML.HXT.Core
-import qualified Data.ByteString.Lazy.Char8            as BL
+
 
 makeCell :: String -> TableCell
 makeCell c = let (Pandoc _ bs) = readMarkdown def c in
@@ -42,7 +43,7 @@ makeTable caption heads widths aligns rows =
              (map makeRow rows))
 
 makeItem :: [String] -> [Block]
-makeItem cells = let i = intercalate ": " cells in
+makeItem cells = let i = DL.intercalate ": " cells in
                  makeCell i
 
 makeList :: [[String]] -> Block
@@ -55,6 +56,17 @@ makeList rows =
 formatCSV id classes namevals contents = do
   let (heads, rows) = getCSV contents
   makeTable (fromMaybe "Table" $ lookup "caption" namevals) 
+            heads 
+            ((read $ fromMaybe "[]"  $ lookup "widths" namevals)::[Double]) 
+            (read $ fromMaybe "[]" $ lookup "align" namevals)
+            rows
+
+pivotCSV :: String -> [String] -> [(String, String)] -> String -> IO Block
+pivotCSV id classes namevals contents = do
+  let pivot_col = fromMaybe "State" $ lookup "pivot_col" namevals
+  let value_col = fromMaybe "Desc" $ lookup "value_col" namevals
+  (heads, rows) <- getCSVPivot pivot_col value_col contents
+  return $ makeTable (fromMaybe "Table" $ lookup "caption" namevals) 
             heads 
             ((read $ fromMaybe "[]"  $ lookup "widths" namevals)::[Double]) 
             (read $ fromMaybe "[]" $ lookup "align" namevals)
@@ -75,13 +87,12 @@ formatXML id classes namevals contents = do
       return $ makeList rows
 
 
-format :: Block -> IO Block
-format cb@(CodeBlock (id, classes, namevals) contents) 
+formatTableBlock :: Block -> IO Block
+formatTableBlock cb@(CodeBlock (id, classes, namevals) contents) 
   | elem "table" classes && elem "csv" classes = return $ formatCSV id classes namevals contents
+  | elem "pivot" classes && elem "csv" classes = pivotCSV id classes namevals contents
   | elem "table" classes && elem "xml" classes = formatXML id classes namevals contents
   | elem "list" classes && elem "xml" classes = formatXML id classes namevals contents
   | otherwise = return cb
-format x = return x
+formatTableBlock x = return x
 
-main :: IO ()
-main = toJSONFilter format

@@ -1,7 +1,7 @@
 {-# LANGUAGE Arrows, NoMonomorphismRestriction #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
-module XMLTable (getXML) where
+module Text.Pandoc.Filter.XMLTable (getXML) where
 import Text.XML.HXT.Core
 
 makeString :: String -> String
@@ -30,7 +30,7 @@ getRows root cols =
            returnA -< rs
          
         
-getXML ::  String -> [String]  -> String -> IO [[String]]
+getXML :: String -> [String]  -> String -> IO [[String]]
 getXML root cols contents = do
   [rows] <- runX (readString [ withValidate no
                              , withRemoveWS yes  -- throw away formating WS

@@ -79,3 +79,6 @@ The plain form, without a class.
 <div class="code" include="Setup.hs"></div>
 
 <div include="sample.md"></div>
+
+~~~~~ {.csv .pivot include="kanban.csv" caption="CSV Pivot Table" widths="[0.33, 0.33, 0.33]" pivot_col="State" value_col="Task"}
+~~~~~
