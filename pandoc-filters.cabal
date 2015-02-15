@@ -61,16 +61,17 @@ library
                    Haskell2010
 
   build-depends:       base >= 4.5 && < 5.0
-                       , bytestring
-                       , containers
+                       , unix   ==  2.5.1.1
+                       , MissingH
                        , pandoc >= 1.13.0
                        , pandoc-types
-                       , cassava 
-                       , conduit
-                       , conduit-extra
-                       , csv-conduit
-                       , hxt
-                       , vector
+                       , filepath
+                       , transformers
+                       , containers
+                       , csv
+                       , directory
+                       , xml
+
   -- Directories containing source files.
   -- hs-source-dirs:      
   
@@ -92,21 +93,21 @@ executable           csv_to_table
   -- .hs or .lhs file containing the Main module. 
   main-is:           csv_to_table.hs
   build-depends:       base >= 4.5 && < 5.0
-                       , bytestring
-                       , containers
-                       , pandoc >= 1.13.0
+                       , MissingH
+                       , filepath
+                       , pandoc 
                        , pandoc-types
-                       , cassava 
-                       , conduit
-                       , conduit-extra
-                       , csv-conduit
-                       , hxt
-                       , vector
+                       , containers
+                       , pandoc-filters
+                       , csv
+                       , xml
+  default-language:
+                   Haskell2010
 
-  other-modules:
-            Text.Pandoc.Filter.CSVTable
-            , Text.Pandoc.Filter.Tables
-            , Text.Pandoc.Filter.XMLTable
+--  other-modules:
+--            Text.Pandoc.Filter.Tables
+            
+
 
 executable           include
   hs-source-dirs:    src
@@ -114,22 +115,19 @@ executable           include
   main-is:           include.hs
 
   -- Modules included in this executable, other than Main.
-  other-modules:
-            Text.Pandoc.Filter.Include
-  
+--  other-modules:
+--            Text.Pandoc.Filter.Include
+
   -- LANGUAGE extensions used by modules in this package.
+  default-language:
+                   Haskell2010
   -- other-extensions:    
   build-depends:
        base >= 4.5 && < 5.0
-       , bytestring
-       , containers
-       , pandoc >= 1.13.0
+       , MissingH
+       , pandoc-filters
+       , directory
+       , pandoc
        , pandoc-types
-       , cassava 
-       , conduit
-       , conduit-extra
-       , csv-conduit
-       , hxt
-       , vector
-
-
+       , transformers
+       , filepath

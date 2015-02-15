@@ -1,84 +1,20 @@
 
-A table from CSV:
+# A table from CSV
 
 ~~~~~ {.csv .table include="test_table.csv" caption="CSV Test Table" widths="[0.3, 0.6, 0.1]"}
 ~~~~~
 
+# "Immediate" table
 
-`test_table.xml` as a table, using *.table* class:
-
-~~~~~ {.xml .table include="test_table.xml" caption="XML Test Table" widths="[0.3, 0.6, 0.1]" columns='["id", "desc", "release"]' root="frontend" child="footure"}
+~~~~~ {.csv .table  caption="CSV Test Table" widths="[0.3, 0.6, 0.1]"}
+First,Second,Third
+A1,A2,A3
+B1,B2,B3
+C1,C2,C3
+"-*- mode: compilation; default-directory: /home/jnoll/projects/src/pandoc-filters/ -*-",Compilation started at Mon Jan 26 20:55:51,"Deprecated: Please use the new exceptions variant, Control.Exception.try"
 ~~~~~
 
-`test_table.xml` as a list, using *.list* class:
-
-~~~~~ {.xml .list include="test_table.xml"  columns='["id", "desc", "release"]' root="frontend" child="footure"}
-~~~~~
-
-XML code block as a table:
-
-~~~~~ {.xml .table  caption="XML Test Table (immediate)" widths="[0.3, 0.6, 0.1]" columns='["id", "desc", "release"]' root="features" child="footure"}
-<features>
-  <feature>
-    <id>feature 1</id>
-    <desc>Do the processing for feature 1</desc>
-    <release>1</release>
-  </feature>
-  <feature>
-    <id>feature 2</id>
-    <desc>Do the processing for feature 2</desc>
-    <release>2</release>
-  </feature>
-  <feature>
-    <id>feature 3</id>
-    <desc>Do the processing for feature 3</desc>
-    <release>3</release>
-  </feature>
-</features>
-~~~~~
-
-XML code block as a list:
-
-~~~~~ {.xml .list  columns='["id", "desc", "release"]' root="features"}
-<features>
-  <feature>
-    <id>feature 1</id>
-    <desc>Do the processing for feature 1</desc>
-    <release>1</release>
-  </feature>
-  <feature>
-    <id>feature 2</id>
-    <desc>Do the processing for feature 2</desc>
-    <release>2</release>
-  </feature>
-  <feature>
-    <id>feature 3</id>
-    <desc>Do the processing for feature 3</desc>
-    <release>3</release>
-  </feature>
-</features>
-~~~~~
-
-Include file contents:
-
-~~~~~ {.xml include="test_table.xml"}
-~~~~~ 
-
-Note that without a class, the contents will just be indented as
-unknown code:
-
-~~~~~ {include="test_table.xml"}
-~~~~~ 
-
-This alternate include syntax based on div seems more natural.
-
-<div class="code haskell" include="Setup.hs"></div>
-
-The plain form, without a class.
-
-<div class="code" include="Setup.hs"></div>
-
-<div include="sample.md"></div>
+# Kanban-style pivot table
 
 ~~~~~ {.csv .pivot include="kanban.csv" caption="CSV Pivot Table" widths="[0.33, 0.33, 0.33]" pivot_col="State" value_col="Task"}
 ~~~~~

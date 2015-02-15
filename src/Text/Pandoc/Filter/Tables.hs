@@ -10,14 +10,12 @@ import Text.Pandoc.Filter.XMLTable
 import Text.Pandoc.Options (def)
 import Text.Pandoc.Readers.Markdown (readMarkdown)
 import Text.Pandoc
-import System.IO
-import qualified  Data.List as DL
-import Data.Csv hiding (lookup)
---import Data.Char (ord)
+import qualified Data.List as DL
+import qualified Data.Map as M
 import Data.Maybe (fromJust, fromMaybe)
-import Text.XML.HXT.Core
 
 
+-- Pandoc table functions ---------------------------------------------------------------
 makeCell :: String -> TableCell
 makeCell c = let (Pandoc _ bs) = readMarkdown def c in
              bs
@@ -50,10 +48,66 @@ makeList :: [[String]] -> Block
 makeList rows = 
   let rows' = map makeItem rows in
   (OrderedList (1, DefaultStyle, DefaultDelim) rows')
+-- END Pandoc table functions -----------------------------------------------------------
 
+-- Pivot functions ----------------------------------------------------------------------
 
+headOrPad :: a -> [a] -> a
+headOrPad pad vs = 
+    if DL.null vs then pad
+    else DL.head vs
 
-formatCSV id classes namevals contents = do
+tailOrPad :: [a] -> [a]
+tailOrPad l = if DL.null l then [] else  DL.tail l
+
+notNull :: [a] -> Bool
+notNull = not . DL.null
+-- Take a list of lists of data in the same category, and make a table
+-- with columns containing data of the same category.
+transposePadWith ::  v -> [[v]] -> [[v]]
+transposePadWith pad xs =
+    if DL.null $ DL.filter notNull xs then []
+    else let hs = DL.map (headOrPad pad) xs
+         in hs:(transposePadWith pad $ DL.map tailOrPad xs)
+
+-- Put the cell_col field of each row in a Map bucket with key
+-- matching the pivot_col field of that row.
+groupRows :: Int -> Int -> [[String]] -> [[String]]
+groupRows pivot_col cell_col rows = 
+   let m = DL.foldl' (\a r -> if length r > max pivot_col cell_col then  M.insertWith (++) (r !! pivot_col) [(r !! cell_col)] a else a) (M.empty :: M.Map String [String]) rows 
+   in DL.filter notNull $ DL.map (\k -> fromMaybe [] $ M.lookup k m) $ DL.nub $ DL.map (getField pivot_col) rows
+
+getField :: Int -> [String] -> String
+getField col row = if length row > col  then row !! col else "(none)"
+
+-- Turn input table into a rotated version where columns are values
+-- from 'cell_field' grouped according to values in 'pivot_field'
+pivotTable :: String -> String -> ([String], [[String]]) -> ([String], [[String]])
+pivotTable pivot_field cell_field (heads, rows) = 
+    -- Default is to pivot on the first column.
+    let pivot_col = fromMaybe 0 $ DL.elemIndex pivot_field heads
+    -- Default is to populate cells with the second column.
+        cell_col = fromMaybe 1 $ DL.elemIndex cell_field heads
+        rows' = groupRows pivot_col cell_col rows
+        rows'' = transposePadWith "" rows'
+        heads' = DL.nub $ DL.map (getField pivot_col) rows
+    in (heads', rows'')
+
+-- END Pivot functions ----------------------------------------------------------------------
+
+pivotCSV :: String -> [String] -> [(String, String)] -> String -> IO Block
+pivotCSV blkid classes namevals contents = do
+  let pivot_col = fromMaybe "State" $ lookup "pivot_col" namevals
+  let value_col = fromMaybe "Desc" $ lookup "value_col" namevals
+  let tbl = getCSV contents
+  let (heads, rows) = pivotTable pivot_col value_col tbl
+  return $ makeTable (fromMaybe "Table" $ lookup "caption" namevals) 
+            heads 
+            ((read $ fromMaybe "[]"  $ lookup "widths" namevals)::[Double]) 
+            (read $ fromMaybe "[]" $ lookup "align" namevals)
+            rows
+
+formatCSV blkid classes namevals contents = do
   let (heads, rows) = getCSV contents
   makeTable (fromMaybe "Table" $ lookup "caption" namevals) 
             heads 
@@ -61,28 +115,25 @@ formatCSV id classes namevals contents = do
             (read $ fromMaybe "[]" $ lookup "align" namevals)
             rows
 
-pivotCSV :: String -> [String] -> [(String, String)] -> String -> IO Block
-pivotCSV id classes namevals contents = do
-  let pivot_col = fromMaybe "State" $ lookup "pivot_col" namevals
-  let value_col = fromMaybe "Desc" $ lookup "value_col" namevals
-  (heads, rows) <- getCSVPivot pivot_col value_col contents
-  return $ makeTable (fromMaybe "Table" $ lookup "caption" namevals) 
-            heads 
-            ((read $ fromMaybe "[]"  $ lookup "widths" namevals)::[Double]) 
-            (read $ fromMaybe "[]" $ lookup "align" namevals)
-            rows
-
 formatXML :: String -> [String] -> [(String, String)] -> String -> IO Block
-formatXML id classes namevals contents = do
+formatXML blkid classes namevals contents = do
   let cols = read $ fromMaybe "[]" $ lookup "columns" namevals
   let root = fromMaybe "" $ lookup "root" namevals
-  rows <- getXML root cols contents 
+  let (heads, rows) = getXML root cols contents 
   if elem "table" classes then 
-      let heads = read $ fromMaybe "[]" $ lookup "headers" namevals
+      let heads' = read $ fromMaybe "[]" $ lookup "headers" namevals
           widths = ((read $ fromMaybe "[]"  $ lookup "widths" namevals)::[Double])
           aligns = (read $ fromMaybe "[]" $ lookup "align" namevals)
-          caption =  fromMaybe "Table" $ lookup "caption" namevals in
-      return $ makeTable caption (if null heads  then cols else heads) widths aligns rows
+          caption =  fromMaybe "Table" $ lookup "caption" namevals
+      in return $ makeTable caption (if null heads'  then heads else heads') widths aligns rows
+  else if elem "pivot" classes then
+           let pivot_col = fromMaybe "State" $ lookup "pivot_col" namevals
+               value_col = fromMaybe "Desc" $ lookup "value_col" namevals
+               (heads', rows') = pivotTable pivot_col value_col (heads, rows)
+               widths = ((read $ fromMaybe "[]"  $ lookup "widths" namevals)::[Double])
+               aligns = (read $ fromMaybe "[]" $ lookup "align" namevals)
+               caption =  fromMaybe "Table" $ lookup "caption" namevals
+           in return $ makeTable caption heads' widths aligns rows'
   else
       return $ makeList rows
 
@@ -92,7 +143,8 @@ formatTableBlock cb@(CodeBlock (id, classes, namevals) contents)
   | elem "table" classes && elem "csv" classes = return $ formatCSV id classes namevals contents
   | elem "pivot" classes && elem "csv" classes = pivotCSV id classes namevals contents
   | elem "table" classes && elem "xml" classes = formatXML id classes namevals contents
-  | elem "list" classes && elem "xml" classes = formatXML id classes namevals contents
+  | elem "pivot" classes && elem "xml" classes = formatXML id classes namevals contents
+  | elem "list"  classes && elem "xml" classes = formatXML id classes namevals contents
   | otherwise = return cb
 formatTableBlock x = return x
 

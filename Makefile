@@ -1,5 +1,8 @@
 all: test
-
+build: 
+	cabal build
+install: 
+	cabal install
 %: %.hs 
 	cabal exec ghc -- --make  $<
 
