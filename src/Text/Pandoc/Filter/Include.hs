@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Text.Pandoc.Filter.Include (include) where
+import Text.Pandoc.Error (handleError)
 import Text.Pandoc.Options (def)
 import Text.Pandoc.Readers.Markdown (readMarkdown)
 import Text.Pandoc
@@ -21,38 +22,38 @@ isNot :: String ->  (String, String)  -> Bool
 isNot key (n, _) = key /= n
 
 includeCodeBlock :: String -> [String] -> [(String, String)] -> String -> IO Block
-includeCodeBlock id classes namevals file = do
+includeCodeBlock _id classes namevals file = do
     p <- findFile [".", ".."] file
     case p of
       Just f -> do                
              c <- readFile f
-             let (Pandoc _ bs) = readMarkdown def c
-             return $ CodeBlock (id, classes, filter (isNot "include") namevals) $ strip c
-      Nothing -> return (CodeBlock (id, classes, filter (isNot "include") namevals)  ("file " ++ file ++ " not found"))
+             let (Pandoc _ bs) = handleError $ readMarkdown def c
+             return $ CodeBlock (_id, classes, filter (isNot "include") namevals) $ strip c
+      Nothing -> return (CodeBlock (_id, classes, filter (isNot "include") namevals)  ("file " ++ file ++ " not found"))
 
 
 includePandoc :: String -> [String] ->  [(String, String)] -> String -> IO Block
-includePandoc id classes namevals file = do
+includePandoc _id classes namevals file = do
     p <- findFile [".", ".."] file
     case p of
       Just f -> do
              c <- readFile f
-             let (Pandoc _ bs) = readMarkdown def c
-             return (Div (id, classes, filter (isNot "include") namevals)  bs)
-      Nothing -> return $ Div (id, classes, filter (isNot "include") namevals)  [Plain [Strong $ [Str ("file " ++ file ++ " not found")]]]
+             let (Pandoc _ bs) = handleError $ readMarkdown def c
+             return (Div (_id, classes, filter (isNot "include") namevals)  bs)
+      Nothing -> return $ Div (_id, classes, filter (isNot "include") namevals)  [Plain [Strong $ [Str ("file " ++ file ++ " not found")]]]
 
 
 include :: Block -> IO Block
-include cb@(CodeBlock (id, classes, namevals) contents) =
+include cb@(CodeBlock (_id, classes, namevals) contents) =
   case lookup "include" namevals of 
-    Just file -> includeCodeBlock id classes namevals file
+    Just file -> includeCodeBlock _id classes namevals file
     Nothing -> return cb
 
-include div@(Div (id, classes, namevals) _) =
+include _div@(Div (_id, classes, namevals) _) =
   case lookup "include" namevals of 
     Just file -> if elem "code" classes then
-                     includeCodeBlock id (filter (\x -> x /= "code") classes) namevals file
+                     includeCodeBlock _id (filter (\x -> x /= "code") classes) namevals file
                  else
-                     includePandoc id classes namevals file
-    Nothing   -> return div
+                     includePandoc _id classes namevals file
+    Nothing   -> return _div
 include x = return x

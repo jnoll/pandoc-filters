@@ -5,6 +5,7 @@
 module Text.Pandoc.Filter.Tables (
        formatTableBlock
 ) where
+import Text.Pandoc.Error (handleError)
 import Text.Pandoc.Filter.CSVTable
 import Text.Pandoc.Filter.XMLTable
 import Text.Pandoc.Options (def)
@@ -12,12 +13,12 @@ import Text.Pandoc.Readers.Markdown (readMarkdown)
 import Text.Pandoc
 import qualified Data.List as DL
 import qualified Data.Map as M
-import Data.Maybe (fromJust, fromMaybe)
+import Data.Maybe (fromMaybe)
 
 
 -- Pandoc table functions ---------------------------------------------------------------
 makeCell :: String -> TableCell
-makeCell c = let (Pandoc _ bs) = readMarkdown def c in
+makeCell c = let (Pandoc _ bs) = handleError $ readMarkdown def c in
              bs
 
 makeRow :: [String] -> [TableCell]
@@ -96,19 +97,21 @@ pivotTable pivot_field cell_field (heads, rows) =
 -- END Pivot functions ----------------------------------------------------------------------
 
 pivotCSV :: String -> [String] -> [(String, String)] -> String -> IO Block
-pivotCSV blkid classes namevals contents = do
+pivotCSV _ _ namevals contents = do
   let pivot_col = fromMaybe "State" $ lookup "pivot_col" namevals
-  let value_col = fromMaybe "Desc" $ lookup "value_col" namevals
-  let tbl = getCSV contents
-  let (heads, rows) = pivotTable pivot_col value_col tbl
+      value_col = fromMaybe "Desc" $ lookup "value_col" namevals
+      delim = head $ fromMaybe "," $ lookup "delim" namevals
+      tbl = getCSV delim contents
+      (heads, rows) = pivotTable pivot_col value_col tbl
   return $ makeTable (fromMaybe "Table" $ lookup "caption" namevals) 
             heads 
             ((read $ fromMaybe "[]"  $ lookup "widths" namevals)::[Double]) 
             (read $ fromMaybe "[]" $ lookup "align" namevals)
             rows
 
-formatCSV blkid classes namevals contents = do
-  let (heads, rows) = getCSV contents
+formatCSV _ _ namevals contents = do
+  let delim = head $ fromMaybe "," $ lookup "delim" namevals
+      (heads, rows) = getCSV delim contents
   makeTable (fromMaybe "Table" $ lookup "caption" namevals) 
             heads 
             ((read $ fromMaybe "[]"  $ lookup "widths" namevals)::[Double]) 
@@ -116,7 +119,7 @@ formatCSV blkid classes namevals contents = do
             rows
 
 formatXML :: String -> [String] -> [(String, String)] -> String -> IO Block
-formatXML blkid classes namevals contents = do
+formatXML _ classes namevals contents = do
   let cols = read $ fromMaybe "[]" $ lookup "columns" namevals
   let root = fromMaybe "" $ lookup "root" namevals
   let (heads, rows) = getXML root cols contents 
@@ -139,12 +142,12 @@ formatXML blkid classes namevals contents = do
 
 
 formatTableBlock :: Block -> IO Block
-formatTableBlock cb@(CodeBlock (id, classes, namevals) contents) 
+formatTableBlock cb@(CodeBlock (_id, classes, namevals) contents) 
   | elem "table" classes && elem "csv" classes = return $ formatCSV id classes namevals contents
-  | elem "pivot" classes && elem "csv" classes = pivotCSV id classes namevals contents
-  | elem "table" classes && elem "xml" classes = formatXML id classes namevals contents
-  | elem "pivot" classes && elem "xml" classes = formatXML id classes namevals contents
-  | elem "list"  classes && elem "xml" classes = formatXML id classes namevals contents
+  | elem "pivot" classes && elem "csv" classes = pivotCSV _id classes namevals contents
+  | elem "table" classes && elem "xml" classes = formatXML _id classes namevals contents
+  | elem "pivot" classes && elem "xml" classes = formatXML _id classes namevals contents
+  | elem "list"  classes && elem "xml" classes = formatXML _id classes namevals contents
   | otherwise = return cb
 formatTableBlock x = return x
 
