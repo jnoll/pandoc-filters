@@ -8,8 +8,6 @@ module Text.Pandoc.Filter.Tables (
 import Text.Pandoc.Error (handleError)
 import Text.Pandoc.Filter.CSVTable
 import Text.Pandoc.Filter.XMLTable
-import Text.Pandoc.Options (def)
-import Text.Pandoc.Readers.Markdown (readMarkdown)
 import Text.Pandoc
 import qualified Data.List as DL
 import qualified Data.Map as M
