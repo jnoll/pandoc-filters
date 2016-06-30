@@ -13,3 +13,14 @@ This div has class _always_.
 <div id="never" class="sometimes">
 This div has class _sometimes_.
 </div>
+# This header is un-classed
+
+# This header has ID=other {#other}
+
+# This header has ID=yes and class=no {#yes .no}
+
+# This header is never class {.never}
+
+# This header is sometimes class {.sometimes}
+
+# This header is always class {.always}

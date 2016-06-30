@@ -87,7 +87,7 @@ library
             , Text.Pandoc.Filter.Include
             , Text.Pandoc.Filter.Tables
             , Text.Pandoc.Filter.XMLTable
-            , Text.Pandoc.Filter.SelectDiv
+            , Text.Pandoc.Filter.SelectElement
 
 
 executable           csv_to_table
@@ -134,10 +134,11 @@ executable           include
        , transformers
        , filepath
 
-executable           select_div
+
+executable           select_element
   hs-source-dirs:    src
   -- .hs or .lhs file containing the Main module.
-  main-is:           select_div.hs
+  main-is:           select_element.hs
 
 -- Modules included in this executable, other than Main.
 --  other-modules:
@@ -149,10 +150,10 @@ executable           select_div
   -- other-extensions:    
   build-depends:
        base >= 4.5 && < 5.0
+       , cmdargs
        , pandoc-filters
        , pandoc >= 1.13.0
        , pandoc-types
-       , getopt-generics
 
 executable bibentry
   hs-source-dirs:      src
@@ -165,4 +166,58 @@ executable bibentry
        , pandoc
        , pandoc-citeproc
        , pandoc-types
+  default-language:    Haskell2010
+
+executable to_img
+  hs-source-dirs:      src
+  main-is:             to_img.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+       base >= 4.5 && < 5.0
+       , SHA
+       , directory
+       , filepath
+       , pandoc
+       , pandoc-filters
+       , pandoc-types
+       , process
+       , temporary
+       , transformers
+       , utf8-string
+
+  default-language:    Haskell2010
+
+executable subst
+  hs-source-dirs:      src
+  main-is:             subst.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+       base >= 4.5 && < 5.0
+       , containers
+       , getopt-generics
+       , lazy-csv
+       , pandoc
+       , pandoc-filters
+       , pandoc-types
+
+  default-language:    Haskell2010
+
+executable beamer
+  hs-source-dirs:      src
+  main-is:             beamer.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+       base >= 4.5 && < 5.0
+       , SHA
+       , directory
+       , filepath
+       , here
+       , pandoc
+       , pandoc-filters
+       , pandoc-types
+       , process
+       , temporary
+       , transformers
+       , utf8-string
+
   default-language:    Haskell2010

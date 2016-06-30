@@ -16,7 +16,7 @@ C1,C2,C3
 
 # An immediate DSV table
 
-~~~~~ {.csv .table  caption="CSV Test Table" widths="[0.3, 0.6, 0.1]" delim="|"}
+~~~~~ {.csv .table  caption="DSV Test Table" widths="[0.3, 0.6, 0.1]" delim="|"}
 First|Second|Third
 A1|A2|A3
 B1|B2|B3
