@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DoAndIfThenElse #-}
 module Text.Pandoc.Filter.Tables (
-       formatTableBlock
+       formatTableBlock, makeTable
 ) where
 import Text.Pandoc.Error (handleError)
 import Text.Pandoc.Filter.CSVTable
