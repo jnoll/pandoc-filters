@@ -172,6 +172,7 @@
           </date>
         </else-if>
       </choose>
+      <text variable="URL" prefix="Available at: "/>
     </group>
   </macro>
   <macro name="title">
@@ -451,7 +452,7 @@
       <key macro="contributors"/>
       <key variable="issued"/>
     </sort>
-    <layout suffix="^ ">
+    <layout suffix="  ">
       <group delimiter="&#10;">	<!--this is a newline-->
         <text macro="contributors"/>
         <text macro="date"/>

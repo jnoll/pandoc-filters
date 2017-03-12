@@ -23,4 +23,19 @@
     <release>2</release>
   </feature>
 </engine>
+<deep>
+<deeper>
+  <feature>
+    <id>deeper 1</id>
+    <desc>Do the processing for deeper 1</desc>
+    <release>3</release>
+  </feature>
+  <feature>
+    <id>deeper 2</id>
+    <desc>Do the processing for deeper 2</desc>
+    <release>3</release>
+  </feature>
+</deeper>
+</deep>
+
 </backlog>

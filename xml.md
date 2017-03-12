@@ -2,7 +2,10 @@
 
 `test_table.xml` as a table, using *.table* class:
 
-~~~~~ {.xml .table include="test_table.xml" caption="XML Test Table" widths="[0.3, 0.6, 0.1]" columns='["id", "desc", "release"]' root="frontend"}
+~~~~~ {.xml .table include="test_table.xml" caption="XML Test Table (root=frontend)" widths="[0.3, 0.6, 0.1]" columns='["id", "DESC", "release"]' root="frontend"}
+~~~~~
+
+~~~~~ {.xml .table include="test_table.xml" caption="XML Test Table (root=deeper)" widths="[0.3, 0.6, 0.1]" columns='["id", "desc", "release"]' root="deeper"}
 ~~~~~
 
 
@@ -17,7 +20,7 @@ with explicit headers:
 ~~~~~ {.xml .table include="test_table.xml" columns='["id", "desc", "release"]' widths="[0.3, 0.6, 0.1]" align='["c", "l", "r"]' headers='["Feature", "Description", "Rel"]' root="engine"}
 ~~~~~
 
-~~~~~ {.xml .table  caption="XML Test Table (immediate)" widths="[0.3, 0.6, 0.1]" columns='["id", "desc", "release"]' root="features" child="footure"}
+~~~~~ {.xml .table  caption="XML Test Table (immediate)" widths="[0.3, 0.6, 0.1]" columns='["id", "description", "release"]' root="features" child="feature"}
 <features>
   <feature>
     <id>feature 1</id>
