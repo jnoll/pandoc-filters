@@ -85,10 +85,25 @@ library
   exposed-modules:
             Text.Pandoc.Filter.CSVTable
             , Text.Pandoc.Filter.Include
-            , Text.Pandoc.Filter.Tables
-            , Text.Pandoc.Filter.XMLTable
             , Text.Pandoc.Filter.SelectElement
+            , Text.Pandoc.Filter.Subst
+            , Text.Pandoc.Filter.Tables
 
+
+
+
+
+executable           color
+  hs-source-dirs:    src
+  -- .hs or .lhs file containing the Main module. 
+  main-is:           color.hs
+  build-depends:       base >= 4.5 && < 5.0
+                       , pandoc >= 1.13.0
+                       , pandoc-types
+                       , pandoc-filters
+
+  default-language:
+                   Haskell2010
 
 executable           csv_to_table
   hs-source-dirs:    src

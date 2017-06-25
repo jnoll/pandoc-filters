@@ -23,3 +23,7 @@ test_subst:
 	pandoc -t json subst.md | stack exec subst words.dat  | pandoc -f json -t plain
 test_beamer:
 	pandoc -t json beamer.md | stack exec beamer  | pandoc -f json -s -t beamer --wrap=none -o beamer.pdf
+
+# For this to work, the --filter switch must be used so output format is passed.
+test_color:
+	pandoc -s -t latex --wrap=none --filter color color.md -o color.pdf
