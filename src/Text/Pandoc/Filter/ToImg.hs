@@ -65,14 +65,40 @@ plantuml outfile libdir contents =
            then copyFile (replaceExtension temp_file ".png") outfile
            else error $ "Error running plantuml from " ++ jar ++ ": " ++ stderr_out
 
+ditaa :: FilePath -> String -> String -> IO ()
+ditaa outfile libdir contents = 
+  unlessM (doesFileExist outfile) $ do
+     -- 0) Establish a temporary file name to store the data into before running ditaa
+    tmp_dir <- getTemporaryDirectory
+    withTempFile tmp_dir "contents.puml" $ \temp_file temp_file_h -> do
+        -- 1) Setup input file by writing contents to it:
+        hPutStrLn temp_file_h contents
+        hClose temp_file_h
+  
+        -- 2) Run ditaa to turn into an equivalently named .png:
+        jar <- findJar "ditaa" libdir
+        let options = ["-jar"
+                      , libdir </> jar
+                      , "--overwrite"
+                      ] ++ [temp_file]
+        (ec, _, stderr_out) <- readProcessWithExitCode "java" options ""
+        if ec == ExitSuccess
+           then copyFile (replaceExtension temp_file ".png") outfile
+           else error $ "Error running plantuml from " ++ jar ++ ": " ++ stderr_out
+
   
 toImg :: Block -> IO Block
 toImg cb@(CodeBlock (_id, classes, namevals) contents) =
-    if elem "plantuml" classes then
+    if elem "plantuml" classes || elem "ditaa" classes then
         do
-          let outfile =  uniqueName "input" contents <.> "png"
+          let outfile = case lookup "filename" namevals of
+                          Just f -> f 
+                          Nothing -> uniqueName "input" contents <.> "png"
           let libdir = "/home/jnoll" </> "lib"
-          plantuml outfile libdir contents
+          if elem "plantuml" classes then
+             plantuml outfile libdir contents
+          else
+             ditaa outfile libdir contents
           return $ Para [Image (_id, classes, namevals) [] (outfile, "")]
     else return cb
 
