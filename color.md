@@ -13,6 +13,10 @@ Here is some text.  _This emph text should be colored red._
 text on a blue background.</span>
 Here is the last text.
 
+The  following text should be red: 
+[This text should be red.]{.color color="red"}
+<span class="color" color="red">This text should be red.]{.color color="red"}</span>
+
 # This header is not colored
 
 <div class="bgcolor color frame" color="blue" bgcolor="cyan">

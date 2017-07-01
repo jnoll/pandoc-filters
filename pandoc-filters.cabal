@@ -217,22 +217,22 @@ executable subst
 
   default-language:    Haskell2010
 
-executable beamer
-  hs-source-dirs:      src
-  main-is:             beamer.hs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-       base >= 4.5 && < 5.0
-       , SHA
-       , directory
-       , filepath
-       , here
-       , pandoc
-       , pandoc-filters
-       , pandoc-types
-       , process
-       , temporary
-       , transformers
-       , utf8-string
-
-  default-language:    Haskell2010
+-- executable beamer
+--   hs-source-dirs:      src
+--   main-is:             beamer.hs
+--   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+--   build-depends:
+--        base >= 4.5 && < 5.0
+--        , SHA
+--        , directory
+--        , filepath
+--        , here
+--        , pandoc
+--        , pandoc-filters
+--        , pandoc-types
+--        , process
+--        , temporary
+--        , transformers
+--        , utf8-string
+-- 
+--   default-language:    Haskell2010

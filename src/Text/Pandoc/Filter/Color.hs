@@ -28,12 +28,16 @@ colorForeground sp@(Span (id, classes, attrs) xs) =
       if elem "color" classes then 
           let clr = fromMaybe "red" $ lookup "color" attrs
           in colorBackground $ Span (id, classes, attrs) $ mkColorText clr xs
-      else colorBackground sp
+      else if elem "date" classes then
+               mkColorText "blue" xs
+           else if elem "updated" classes then
+                    mkColorText "cyan" xs
+                else colorBackground sp
 
 
 colorInline :: Maybe Format -> Inline -> Inline
-colorInline (Just f) (Emph xs)
-  | f == Format "latex" = Emph $ (RawInline (Format "latex") "\\textcolor{red}{"):xs ++  [RawInline  (Format "latex") "}"]
+colorInline (Just f) (Emph xs)  -- XXXjn this shold obtain color from meta-data.
+  | f == Format "latex" = Emph $ (RawInline (Format "latex") "\\textcolor{black}{"):xs ++  [RawInline  (Format "latex") "}"]
 colorInline (Just f) sp@(Span (id, classes, attrs) xs)
   | f == Format "latex" = Span ("", ["placeholder"], []) $ colorForeground sp
 colorInline _ x = x
