@@ -88,7 +88,7 @@ library
             , Text.Pandoc.Filter.SelectElement
             , Text.Pandoc.Filter.Subst
             , Text.Pandoc.Filter.Tables
-
+            , Text.Pandoc.Filter.XMLTable
 
 
 
@@ -104,7 +104,9 @@ executable           color
 
   default-language:
                    Haskell2010
-
+  other-modules:
+            Text.Pandoc.Filter.Color
+                  
 executable           csv_to_table
   hs-source-dirs:    src
   -- .hs or .lhs file containing the Main module. 
@@ -120,6 +122,11 @@ executable           csv_to_table
                        , xml
   default-language:
                    Haskell2010
+  other-modules:
+          Text.Pandoc.Filter.CSVTable
+          , Text.Pandoc.Filter.Tables
+          , Text.Pandoc.Filter.XMLTable
+
 
 --  other-modules:
 --            Text.Pandoc.Filter.Tables
@@ -149,6 +156,9 @@ executable           include
        , transformers
        , filepath
 
+  other-modules:
+          Text.Pandoc.Filter.Include
+
 
 executable           select_element
   hs-source-dirs:    src
@@ -170,6 +180,9 @@ executable           select_element
        , pandoc >= 1.13.0
        , pandoc-types
 
+  other-modules:
+          Text.Pandoc.Filter.SelectElement
+
 executable bibentry
   hs-source-dirs:      src
   main-is:             bibentry.hs
@@ -182,6 +195,9 @@ executable bibentry
        , pandoc-citeproc
        , pandoc-types
   default-language:    Haskell2010
+
+  other-modules:
+          Text.Pandoc.Filter.BibEntry
 
 executable to_img
   hs-source-dirs:      src
@@ -202,6 +218,9 @@ executable to_img
 
   default-language:    Haskell2010
 
+  other-modules:
+          Text.Pandoc.Filter.ToImg
+
 executable subst
   hs-source-dirs:      src
   main-is:             subst.hs
@@ -216,6 +235,10 @@ executable subst
        , pandoc-types
 
   default-language:    Haskell2010
+
+  other-modules:
+          Text.Pandoc.Filter.CSVTable
+          , Text.Pandoc.Filter.Subst
 
 -- executable beamer
 --   hs-source-dirs:      src
